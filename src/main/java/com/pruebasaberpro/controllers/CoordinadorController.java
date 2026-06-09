@@ -7,7 +7,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/coordinador")
@@ -19,8 +22,6 @@ public class CoordinadorController {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final BeneficioRepository beneficioRepository;
-    private Double lecturaEscritura2; // Lectura Crítica
- // + getter y setter
 
     public CoordinadorController(EstudianteRepository estudianteRepository,
                                  ResultadoRepository resultadoRepository,
@@ -170,7 +171,7 @@ public class CoordinadorController {
     public String guardarCalificacion(@RequestParam Long estudianteId,
                                       @RequestParam Double puntajeGlobal,
                                       @RequestParam Double lecturaEscritura,
-                                      @RequestParam Double lecturaEscritura2,      // ← AGREGAR
+                                      @RequestParam Double lecturaEscritura2,
                                       @RequestParam Double razonamientoCuantitativo,
                                       @RequestParam Double competenciasCiudadanas,
                                       @RequestParam Double inglesComponente,
@@ -184,7 +185,7 @@ public class CoordinadorController {
             Resultado r = new Resultado();
             r.setEstudiante(e);
             r.setPuntajeGlobal(puntajeGlobal);
-            r.setLecturaEscritura(lecturaEscritura);   // ← AGREGAR (ver Paso 2)
+            r.setLecturaEscritura(lecturaEscritura);
             r.setRazonamientoCuantitativo(razonamientoCuantitativo);
             r.setCompetenciasCiudadanas(competenciasCiudadanas);
             r.setInglesComponente(inglesComponente);
@@ -202,9 +203,20 @@ public class CoordinadorController {
         Usuario usuario = validarSesion(session);
         if (usuario == null) return "redirect:/login";
 
+        List<Estudiante> estudiantes = estudianteRepository.findAll();
+        List<Resultado> resultados = resultadoRepository.findAll();
+
+        // Mapa: estudianteId -> cantidad de resultados
+        Map<Long, Long> conteoResultados = new HashMap<>();
+        for (Resultado r : resultados) {
+            Long eid = r.getEstudiante().getId();
+            conteoResultados.put(eid, conteoResultados.getOrDefault(eid, 0L) + 1L);
+        }
+
         model.addAttribute("usuario", usuario);
-        model.addAttribute("estudiantes", estudianteRepository.findAll());
-        model.addAttribute("resultados", resultadoRepository.findAll());
+        model.addAttribute("estudiantes", estudiantes);
+        model.addAttribute("resultados", resultados);
+        model.addAttribute("conteoResultados", conteoResultados);
         return "coordinador/informe-general";
     }
 
@@ -265,9 +277,26 @@ public class CoordinadorController {
         Usuario usuario = validarSesion(session);
         if (usuario == null) return "redirect:/login";
 
+        List<Resultado> resultados = resultadoRepository.findAll();
+        List<Beneficio> beneficios = beneficioRepository.findAll();
+
+        // Mapa: resultadoId -> lista de beneficios que aplican según tipoPrueba
+        Map<Long, List<Beneficio>> beneficiosPorResultado = new HashMap<>();
+        for (Resultado r : resultados) {
+            List<Beneficio> aplicables = new ArrayList<>();
+            for (Beneficio b : beneficios) {
+                if (b.getTipoPrograma() != null &&
+                    b.getTipoPrograma().equalsIgnoreCase(r.getTipoPrueba())) {
+                    aplicables.add(b);
+                }
+            }
+            beneficiosPorResultado.put(r.getId(), aplicables);
+        }
+
         model.addAttribute("usuario", usuario);
-        model.addAttribute("beneficios", beneficioRepository.findAll());
-        model.addAttribute("resultados", resultadoRepository.findAll());
+        model.addAttribute("resultados", resultados);
+        model.addAttribute("beneficios", beneficios);
+        model.addAttribute("beneficiosPorResultado", beneficiosPorResultado);
         return "coordinador/informe-beneficios";
     }
 }

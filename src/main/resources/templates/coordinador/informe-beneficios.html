@@ -172,9 +172,11 @@
       display:inline-flex;align-items:center;
       padding:3px 9px;border-radius:20px;
       font-size:.66rem;font-weight:700;letter-spacing:.3px;
+      margin-right:4px;
     }
     .badge-green{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
     .badge-blue{background:#dbeafe;border:1px solid #93c5fd;color:#1d4ed8}
+    .badge-gray{background:#f1f5f9;border:1px solid #e2e8f0;color:#94a3b8}
 
     @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
   </style>
@@ -349,10 +351,14 @@
               <td><span class="td-score" th:text="${r.puntajeGlobal}"></span></td>
               <td><span class="badge badge-blue" th:text="${r.tipoPrueba}"></span></td>
               <td>
-                <span th:each="b : ${beneficios}"
-                      th:if="${b.tipoPrograma == r.estudiante.facultad.tipo}"
-                      class="badge badge-green me-1"
-                      th:text="${b.nombre}">
+                <!-- Beneficios que aplican según tipoPrueba -->
+                <th:block th:each="b : ${beneficiosPorResultado[r.id]}">
+                  <span class="badge badge-green" th:text="${b.nombre}"></span>
+                </th:block>
+                <!-- Si no aplica ninguno -->
+                <span th:if="${beneficiosPorResultado[r.id] == null or #lists.isEmpty(beneficiosPorResultado[r.id])}"
+                      class="badge badge-gray">
+                  Sin beneficio
                 </span>
               </td>
             </tr>
