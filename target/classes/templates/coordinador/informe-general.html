@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Informe General — Coordinador</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    :root{
+      --bg:#f0f6ff;
+      --sidebar-bg:#ffffff;
+      --topbar-bg:#ffffff;
+      --surface:#ffffff;
+      --surface2:#f0f6ff;
+      --border:#dce8f8;
+      --border-strong:#b8d4f5;
+      --accent:#2563eb;
+      --accent-dark:#07183a;
+      --accent-light:#dbeafe;
+      --accent-mid:#93c5fd;
+      --text:#07183a;
+      --text-mid:#334155;
+      --muted:#94a3b8;
+      --sidebar-w:240px;
+      --success:#10b981;
+      --amber:#f59e0b;
+      --red:#ef4444;
+      --violet:#8b5cf6;
+    }
+
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+    body{display:flex}
+
+    /* ─── SIDEBAR ─── */
+    .sidebar{
+      width:var(--sidebar-w);
+      background:var(--sidebar-bg);
+      border-right:1px solid var(--border);
+      display:flex;flex-direction:column;
+      position:fixed;top:0;left:0;bottom:0;z-index:100;
+      box-shadow:4px 0 20px rgba(7,24,58,.06);
+    }
+    .sidebar-brand{
+      padding:22px 20px 18px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:11px;
+    }
+    .brand-ico{
+      width:36px;height:36px;border-radius:10px;flex-shrink:0;
+      background:linear-gradient(135deg,#07183a,#2563eb);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff;
+    }
+    .brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#07183a;line-height:1.15}
+    .brand-name span{color:#2563eb}
+    .brand-tag{
+      display:inline-block;margin-top:4px;
+      font-size:.56rem;font-weight:700;letter-spacing:1.2px;
+      text-transform:uppercase;color:#fff;
+      background:linear-gradient(135deg,#8B1A1A,#c0392b);
+      padding:2px 7px;border-radius:5px;
+    }
+    .nav-section{
+      font-size:.58rem;font-weight:700;letter-spacing:1.3px;
+      text-transform:uppercase;color:var(--muted);
+      padding:18px 20px 6px;
+    }
+    .nav-item{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 14px;margin:2px 10px;border-radius:10px;
+      font-size:.82rem;font-weight:500;color:var(--text-mid);
+      cursor:pointer;text-decoration:none;transition:all .18s;
+    }
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--muted)}
+    .nav-item:hover{background:var(--accent-light);color:var(--accent);transform:translateX(2px)}
+    .nav-item:hover svg{color:var(--accent)}
+    .nav-item.active{
+      background:linear-gradient(135deg,#dbeafe,#eff6ff);
+      color:var(--accent);
+      border:1px solid var(--border-strong);
+      font-weight:700;
+    }
+    .nav-item.active svg{color:var(--accent)}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{
+      margin:0 10px 6px;padding:12px 14px;border-radius:12px;
+      background:linear-gradient(135deg,#f0f6ff,#dbeafe);
+      border:1px solid var(--border);
+      display:flex;align-items:center;gap:10px;
+    }
+    .user-av{
+      width:32px;height:32px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,#8B1A1A,#c0392b);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;color:#fff;
+    }
+    .user-name{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:#07183a}
+    .user-role{font-size:.62rem;color:var(--muted);margin-top:1px}
+    .logout-link{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 24px;margin-bottom:14px;
+      font-size:.75rem;color:var(--muted);cursor:pointer;
+      text-decoration:none;transition:color .18s;
+    }
+    .logout-link:hover{color:#ef4444}
+    .logout-link svg{width:14px;height:14px}
+
+    /* ─── TOPBAR ─── */
+    .topbar{
+      position:fixed;left:var(--sidebar-w);right:0;top:0;height:58px;
+      background:var(--topbar-bg);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 30px;z-index:40;
+      box-shadow:0 2px 12px rgba(7,24,58,.05);
+    }
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .page-chip{
+      display:flex;align-items:center;gap:6px;
+      padding:5px 12px;border-radius:8px;
+      background:#fee2e2;border:1px solid #fca5a5;
+      font-size:.7rem;font-weight:700;color:#b91c1c;
+    }
+    .page-chip svg{width:13px;height:13px}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#07183a}
+    .page-sub{font-size:.74rem;color:var(--muted);margin-top:1px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .topbar-date{font-size:.72rem;color:var(--muted);padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border)}
+    .topbar-btn{
+      display:flex;align-items:center;gap:6px;
+      padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
+      font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;
+      transition:all .18s;
+    }
+    .topbar-btn svg{width:13px;height:13px}
+    .btn-print{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .btn-print:hover{background:#fecaca}
+    .btn-back{background:var(--surface2);color:var(--text-mid);border:1px solid var(--border)}
+    .btn-back:hover{background:var(--border);color:var(--text)}
+
+    /* ─── MAIN ─── */
+    .main{margin-left:var(--sidebar-w);padding-top:58px;flex:1;overflow-y:auto;height:100%}
+    .main::-webkit-scrollbar{width:5px}
+    .main::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:5px}
+    .content{padding:28px 30px}
+
+    /* ─── PAGE HEADER BAND ─── */
+    .page-band{
+      background:linear-gradient(135deg,#5c0a0a 0%,#8B1A1A 50%,#c0392b 100%);
+      border-radius:18px;padding:24px 28px;
+      margin-bottom:24px;
+      position:relative;overflow:hidden;
+      display:flex;align-items:center;justify-content:space-between;
+      animation:fadeUp .4s ease both;
+    }
+    .page-band::before{
+      content:'';position:absolute;right:-60px;top:-60px;
+      width:220px;height:220px;border-radius:50%;
+      background:rgba(255,255,255,.05);
+    }
+    .page-band::after{
+      content:'';position:absolute;right:60px;bottom:-40px;
+      width:130px;height:130px;border-radius:50%;
+      background:rgba(255,255,255,.04);
+    }
+    .pb-text{position:relative;z-index:1}
+    .pb-eyebrow{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.55);margin-bottom:4px;letter-spacing:.5px}
+    .pb-title{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:#fff}
+    .pb-title span{color:#fca5a5}
+    .pb-sub{font-size:.76rem;color:rgba(255,255,255,.45);margin-top:4px}
+    .pb-icon{
+      position:relative;z-index:1;
+      width:54px;height:54px;border-radius:14px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.2);
+      backdrop-filter:blur(8px);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .pb-icon svg{width:26px;height:26px;color:#fff}
+
+    /* ─── PANEL CARD ─── */
+    .panel-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:16px;overflow:hidden;
+      animation:fadeUp .4s ease both;animation-delay:.15s;
+      box-shadow:0 2px 10px rgba(7,24,58,.04);
+    }
+    .panel-header{
+      padding:16px 20px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      background:linear-gradient(135deg,#f8fbff,#ffffff);
+    }
+    .panel-title{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:700;color:#07183a}
+    .panel-title svg{width:15px;height:15px;color:#b91c1c}
+    .panel-count{
+      background:#fee2e2;border:1px solid #fca5a5;
+      color:#b91c1c;font-size:.7rem;font-weight:700;
+      padding:3px 10px;border-radius:20px;
+    }
+
+    /* ─── TABLE ─── */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:linear-gradient(135deg,#5c0a0a,#8B1A1A)}
+    thead th{
+      padding:11px 14px;
+      font-family:'Syne',sans-serif;font-size:.66rem;font-weight:700;
+      letter-spacing:.8px;text-transform:uppercase;color:#fff;
+      white-space:nowrap;
+    }
+    tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:var(--surface2)}
+    tbody td{padding:11px 14px;font-size:.83rem;color:var(--text-mid);vertical-align:middle}
+    .td-num{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted)}
+    .td-doc{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--text)}
+    .td-name{font-weight:600;color:var(--text)}
+    .td-program{font-size:.78rem;color:var(--text-mid)}
+    .td-email{font-size:.78rem;color:var(--accent)}
+
+    /* badges */
+    .badge{
+      display:inline-flex;align-items:center;
+      padding:3px 9px;border-radius:20px;
+      font-size:.66rem;font-weight:700;letter-spacing:.3px;
+    }
+    .badge-gray{background:var(--surface2);border:1px solid var(--border);color:var(--text-mid)}
+    .badge-green{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+    .badge-amber{background:#fef3c7;border:1px solid #fde68a;color:#92400e}
+    .badge-red{background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-ico">SP</div>
+    <div>
+      <div class="brand-name">Saber <span>Pro</span> &amp; TYT</div>
+      <span class="brand-tag">Coordinador</span>
+    </div>
+  </div>
+
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/coordinador/dashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+
+  <div class="nav-section">Gestión</div>
+  <a class="nav-item" href="/coordinador/estudiantes">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+    Estudiantes
+  </a>
+
+  <div class="nav-section">Informes</div>
+  <a class="nav-item active" href="/coordinador/informe-general">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+    Informe General
+  </a>
+  <a class="nav-item" href="/coordinador/informe-detallado">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M3 15h18M9 3v18"/>
+    </svg>
+    Informe Detallado
+  </a>
+  <a class="nav-item" href="/coordinador/informe-beneficios">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="20 12 20 22 4 22 4 12"/>
+      <rect x="2" y="7" width="20" height="5"/>
+      <line x1="12" y1="22" x2="12" y2="7"/>
+      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+    </svg>
+    Informe Beneficios
+  </a>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-user">
+    <div class="user-av" th:text="${#strings.substring(usuario.nombre,0,1)}">C</div>
+    <div>
+      <div class="user-name" th:text="${usuario.nombre}">Coordinador</div>
+      <div class="user-role">Coordinador</div>
+    </div>
+  </div>
+  <a class="logout-link" href="/logout">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Cerrar sesión
+  </a>
+</aside>
+
+<!-- ─── TOPBAR ─── -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="page-chip">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Informe
+    </div>
+    <div>
+      <div class="page-title">Informe General</div>
+      <div class="page-sub" th:text="'Coordinador: ' + ${usuario.nombre}">Listado de Alumnos</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-date" id="topbar-date"></div>
+    <button onclick="window.print()" class="topbar-btn btn-print">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="6 9 6 2 18 2 18 9"/>
+        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      Imprimir
+    </button>
+    <a href="/coordinador/dashboard" class="topbar-btn btn-back">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Volver al Panel
+    </a>
+  </div>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="main">
+  <div class="content">
+
+    <!-- PAGE BAND -->
+    <div class="page-band">
+      <div class="pb-text">
+        <div class="pb-eyebrow">Gestión Académica</div>
+        <div class="pb-title">Informe <span>General</span> de Alumnos</div>
+        <div class="pb-sub">Sistema de Gestión · Saber Pro &amp; TYT</div>
+      </div>
+      <div class="pb-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- TABLE PANEL -->
+    <div class="panel-card">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Estudiantes Registrados
+        </div>
+        <div class="panel-count" th:text="${#lists.size(estudiantes)} + ' estudiantes'">0 estudiantes</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Documento</th>
+              <th>Nombre Completo</th>
+              <th>Programa</th>
+              <th>Correo</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th>Resultados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="e, i : ${estudiantes}">
+              <td><span class="td-num" th:text="${i.count}"></span></td>
+              <td><span class="td-doc" th:text="${e.documento}"></span></td>
+              <td><span class="td-name" th:text="${e.nombre + ' ' + e.apellido}"></span></td>
+              <td><span class="td-program" th:text="${e.facultad.nombre}"></span></td>
+              <td><span class="td-email" th:text="${e.correo}"></span></td>
+              <td><span class="badge badge-gray" th:text="${e.tipoPrueba}"></span></td>
+              <td>
+                <span th:if="${e.aprobado}" class="badge badge-green">Activo</span>
+                <span th:unless="${e.aprobado}" class="badge badge-amber">Pendiente</span>
+              </td>
+              <td>
+                <span class="badge badge-red" th:text="${resultados.stream().filter(r -> r.estudiante.id == e.id).count()}"></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const d = new Date();
+  const opts = { weekday:'short', day:'numeric', month:'short', year:'numeric' };
+  document.getElementById('topbar-date').textContent = d.toLocaleDateString('es-CO', opts);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="page(titulo, contenido)">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${titulo} + ' | UTS Saber Pro'">UTS Saber Pro</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --uts-navy:      #002a5c;
+            --uts-navy-dark: #001a3a;
+            --uts-red:       #c0152a;
+            --uts-red-light: #e8192f;
+            --uts-gold:      #f5a623;
+            --uts-light:     #f0f4f9;
+            --uts-muted:     #6b7a99;
+            --sidebar-w:     260px;
+            --topbar-h:      64px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--uts-light);
+            color: #1a2340;
+            min-height: 100vh;
+        }
+
+        /* ─── SIDEBAR ─── */
+        #sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--uts-navy-dark) 0%, var(--uts-navy) 100%);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: transform .3s ease;
+            box-shadow: 4px 0 24px rgba(0,0,0,.25);
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 42px; height: 42px;
+            background: var(--uts-red);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(192,21,42,.4);
+        }
+
+        .brand-text .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            color: #fff;
+            line-height: 1.1;
+            letter-spacing: .3px;
+        }
+
+        .brand-text .brand-sub {
+            font-size: 10.5px;
+            color: rgba(255,255,255,.45);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sidebar-user {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            background: var(--uts-gold);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+            color: var(--uts-navy-dark);
+            flex-shrink: 0;
+        }
+
+        .user-info .user-name {
+            font-size: 13px; font-weight: 600;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .user-info .user-role {
+            font-size: 10px;
+            color: var(--uts-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section-label {
+            font-size: 9.5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.3);
+            padding: 16px 20px 6px;
+        }
+
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: rgba(255,255,255,.65);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 400;
+            border-left: 3px solid transparent;
+            transition: all .2s ease;
+            position: relative;
+        }
+
+        .nav-link-item i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-link-item:hover {
+            color: #fff;
+            background: rgba(255,255,255,.06);
+            border-left-color: rgba(255,255,255,.3);
+        }
+
+        .nav-link-item.active {
+            color: #fff;
+            background: rgba(192,21,42,.2);
+            border-left-color: var(--uts-red);
+            font-weight: 600;
+        }
+
+        .nav-link-item.active i {
+            color: var(--uts-gold);
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,.08);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 9px 14px;
+            background: rgba(192,21,42,.15);
+            border: 1px solid rgba(192,21,42,.3);
+            border-radius: 8px;
+            color: rgba(255,255,255,.7);
+            font-size: 13px;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all .2s;
+            text-decoration: none;
+        }
+
+        .btn-logout:hover {
+            background: rgba(192,21,42,.35);
+            color: #fff;
+            border-color: var(--uts-red);
+        }
+
+        /* ─── TOPBAR ─── */
+        #topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: #fff;
+            border-bottom: 1px solid #e2e8f2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 999;
+            box-shadow: 0 2px 12px rgba(0,42,92,.06);
+        }
+
+        .topbar-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--uts-navy);
+            letter-spacing: -.2px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-date {
+            font-size: 12px;
+            color: var(--uts-muted);
+        }
+
+        .topbar-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .badge-admin    { background: rgba(0,42,92,.1);  color: var(--uts-navy); }
+        .badge-coord    { background: rgba(245,166,35,.15); color: #a06b00; }
+        .badge-docente  { background: rgba(0,160,100,.12); color: #006641; }
+        .badge-estudent { background: rgba(192,21,42,.1); color: var(--uts-red); }
+
+        /* ─── MAIN CONTENT ─── */
+        #main-content {
+            margin-left: var(--sidebar-w);
+            margin-top: var(--topbar-h);
+            padding: 28px;
+            min-height: calc(100vh - var(--topbar-h));
+        }
+
+        /* ─── PAGE HEADER ─── */
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--uts-navy);
+            letter-spacing: -.3px;
+        }
+
+        .page-header p {
+            font-size: 13.5px;
+            color: var(--uts-muted);
+            margin-top: 3px;
+        }
+
+        /* ─── CARDS ─── */
+        .card-uts {
+            background: #fff;
+            border: 1px solid #e2e8f2;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,42,92,.04);
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e2e8f2;
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,42,92,.1);
+        }
+
+        .stat-icon {
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.navy  { background: rgba(0,42,92,.1);  color: var(--uts-navy); }
+        .stat-icon.red   { background: rgba(192,21,42,.1); color: var(--uts-red); }
+        .stat-icon.gold  { background: rgba(245,166,35,.15); color: #a06b00; }
+        .stat-icon.green { background: rgba(0,160,100,.12); color: #006641; }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--uts-navy);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12.5px;
+            color: var(--uts-muted);
+            margin-top: 3px;
+        }
+
+        /* ─── TABLES ─── */
+        .table-uts thead th {
+            background: var(--uts-navy);
+            color: rgba(255,255,255,.85);
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            border: none;
+        }
+
+        .table-uts tbody tr {
+            border-bottom: 1px solid #f0f4f9;
+            transition: background .15s;
+        }
+
+        .table-uts tbody tr:hover {
+            background: #f7f9fd;
+        }
+
+        .table-uts tbody td {
+            padding: 12px 16px;
+            font-size: 13.5px;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn-uts-primary {
+            background: var(--uts-navy);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .2s, transform .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .btn-uts-primary:hover {
+            background: var(--uts-navy-dark);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .btn-uts-danger {
+            background: transparent;
+            color: var(--uts-red);
+            border: 1px solid rgba(192,21,42,.3);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+        }
+
+        .btn-uts-danger:hover {
+            background: var(--uts-red);
+            color: #fff;
+            border-color: var(--uts-red);
+        }
+
+        /* ─── FORMS ─── */
+        .form-uts .form-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--uts-navy);
+            margin-bottom: 5px;
+            letter-spacing: .3px;
+        }
+
+        .form-uts .form-control,
+        .form-uts .form-select {
+            border: 1.5px solid #dde3ef;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13.5px;
+            padding: 9px 13px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-uts .form-control:focus,
+        .form-uts .form-select:focus {
+            border-color: var(--uts-navy);
+            box-shadow: 0 0 0 3px rgba(0,42,92,.1);
+            outline: none;
+        }
+
+        /* ─── MODAL ─── */
+        .modal-uts .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,42,92,.18);
+        }
+
+        .modal-uts .modal-header {
+            background: var(--uts-navy);
+            color: #fff;
+            border-radius: 16px 16px 0 0;
+            padding: 18px 24px;
+            border: none;
+        }
+
+        .modal-uts .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-uts .btn-close {
+            filter: invert(1);
+            opacity: .6;
+        }
+
+        .modal-uts .modal-footer {
+            border-top: 1px solid #f0f4f9;
+            padding: 14px 24px;
+        }
+
+        /* ─── ALERTS ─── */
+        .alert-uts {
+            border-radius: 10px;
+            border: none;
+            font-size: 13.5px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c5cfe0; border-radius: 3px; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            #sidebar { transform: translateX(-100%); }
+            #sidebar.open { transform: translateX(0); }
+            #topbar, #main-content { left: 0; margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <div class="brand-text">
+            <div class="brand-name">UTS</div>
+            <div class="brand-sub">Saber Pro &amp; TYT</div>
+        </div>
+    </div>
+
+    <div class="sidebar-user" th:if="${usuario != null}">
+        <div class="user-avatar"
+             th:text="${#strings.substring(usuario.nombre, 0, 1).toUpperCase()}">A</div>
+        <div class="user-info">
+            <div class="user-name" th:text="${usuario.nombre}">Administrador</div>
+            <div class="user-role" th:text="${usuario.rol.nombre}">ROL</div>
+        </div>
+    </div>
+
+    <div class="sidebar-nav">
+        <!-- ADMIN -->
+        <div th:if="${usuario != null and usuario.rol.nombre == 'ADMIN'}">
+            <div class="nav-section-label">Principal</div>
+            <a th:href="@{/admin/dashboard}"
+               th:class="${'nav-link-item' + (paginaActiva == 'dashboard' ? ' active' : '')}"
+               class="nav-link-item">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+
+            <div class="nav-section-label">Gestión</div>
+            <a th:href="@{/admin/coordinadores}"
+               th:class="${'nav-link-item' + (paginaActiva == 'coordinadores' ? ' active' : '')}"
+               class="nav-link-item">
+                <i class="bi bi-person-badge-fill"></i> Coordinadores
+            </a>
+            <a th:href="@{/admin/docentes}"
+               th:class="${'nav-link-item' + (paginaActiva == 'docentes' ? ' active' : '')}"
+               class="nav-link-item">
+                <i class="bi bi-person-workspace"></i> Docentes
+            </a>
+            <a th:href="@{/admin/facultades}"
+               th:class="${'nav-link-item' + (paginaActiva == 'facultades' ? ' active' : '')}"
+               class="nav-link-item">
+                <i class="bi bi-building-fill"></i> Facultades
+            </a>
+            <a th:href="@{/admin/beneficios}"
+               th:class="${'nav-link-item' + (paginaActiva == 'beneficios' ? ' active' : '')}"
+               class="nav-link-item">
+                <i class="bi bi-gift-fill"></i> Beneficios
+            </a>
+        </div>
+
+        <!-- COORDINADOR -->
+        <div th:if="${usuario != null and usuario.rol.nombre == 'COORDINADOR'}">
+            <div class="nav-section-label">Principal</div>
+            <a th:href="@{/coordinador/dashboard}" class="nav-link-item">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <div class="nav-section-label">Gestión</div>
+            <a th:href="@{/coordinador/estudiantes}" class="nav-link-item">
+                <i class="bi bi-people-fill"></i> Estudiantes
+            </a>
+            <a th:href="@{/coordinador/informes}" class="nav-link-item">
+                <i class="bi bi-bar-chart-fill"></i> Informes
+            </a>
+        </div>
+
+        <!-- DOCENTE -->
+        <div th:if="${usuario != null and usuario.rol.nombre == 'DOCENTE'}">
+            <div class="nav-section-label">Principal</div>
+            <a th:href="@{/docente/dashboard}" class="nav-link-item">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <div class="nav-section-label">Consultas</div>
+            <a th:href="@{/docente/buscar}" class="nav-link-item">
+                <i class="bi bi-search"></i> Buscar Examen
+            </a>
+            <a th:href="@{/docente/facultades}" class="nav-link-item">
+                <i class="bi bi-building-fill"></i> Por Facultad
+            </a>
+        </div>
+
+        <!-- ESTUDIANTE -->
+        <div th:if="${usuario != null and usuario.rol.nombre == 'ESTUDIANTE'}">
+            <div class="nav-section-label">Principal</div>
+            <a th:href="@{/estudiante/dashboard}" class="nav-link-item">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <div class="nav-section-label">Mi Proceso</div>
+            <a th:href="@{/estudiante/pago}" class="nav-link-item">
+                <i class="bi bi-credit-card-fill"></i> Cargar Pago
+            </a>
+            <a th:href="@{/estudiante/examen}" class="nav-link-item">
+                <i class="bi bi-file-earmark-text-fill"></i> Mi Examen
+            </a>
+            <a th:href="@{/estudiante/resultados}" class="nav-link-item">
+                <i class="bi bi-trophy-fill"></i> Resultados
+            </a>
+            <a th:href="@{/estudiante/beneficios}" class="nav-link-item">
+                <i class="bi bi-gift-fill"></i> Beneficios
+            </a>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="/login?logout=true" class="btn-logout">
+            <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+        </a>
+    </div>
+</nav>
+
+<!-- ═══ TOPBAR ═══ -->
+<header id="topbar">
+    <span class="topbar-title" th:text="${titulo}">Página</span>
+    <div class="topbar-right">
+        <span class="topbar-date"
+              th:text="${#dates.format(#dates.createNow(), 'EEEE, d MMM yyyy')}">Fecha</span>
+        <span class="topbar-badge"
+              th:classappend="${usuario != null and usuario.rol.nombre == 'ADMIN'    ? ' badge-admin'    :
+                               usuario != null and usuario.rol.nombre == 'COORDINADOR' ? ' badge-coord' :
+                               usuario != null and usuario.rol.nombre == 'DOCENTE'  ? ' badge-docente'  :
+                               ' badge-estudent'}"
+              th:text="${usuario != null ? usuario.rol.nombre : ''}">ROL</span>
+    </div>
+</header>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main id="main-content">
+    <th:block th:replace="${contenido}"></th:block>
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Mobile sidebar toggle
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('sidebarToggle');
+        if (toggle) {
+            toggle.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+        }
+    });
+</script>
+</body>
+</html>
