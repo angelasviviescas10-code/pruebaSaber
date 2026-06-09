@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Revisar Pago — Saber Pro & TYT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f0f6ff;--sidebar-bg:#ffffff;--topbar-bg:#ffffff;--surface:#ffffff;
+      --surface2:#f0f6ff;--border:#dce8f8;--border-strong:#b8d4f5;
+      --accent:#2563eb;--accent-dark:#07183a;--accent-light:#dbeafe;
+      --text:#07183a;--text-mid:#334155;--muted:#94a3b8;--sidebar-w:240px;
+      --red:#b91c1c;--red-light:#fee2e2;--red-border:#fca5a5;
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+    body{display:flex;overflow:hidden}
+
+    .sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;box-shadow:4px 0 20px rgba(7,24,58,.06)}
+    .sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px}
+    .brand-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#07183a,#2563eb);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff}
+    .brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#07183a;line-height:1.15}
+    .brand-name span{color:#2563eb}
+    .brand-tag{display:inline-block;margin-top:4px;font-size:.56rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#8B1A1A,#c0392b);padding:2px 7px;border-radius:5px}
+    .nav-section{font-size:.58rem;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:18px 20px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 10px;border-radius:10px;font-size:.82rem;font-weight:500;color:var(--text-mid);cursor:pointer;text-decoration:none;transition:all .18s}
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--muted)}
+    .nav-item:hover{background:var(--red-light);color:var(--red)}
+    .nav-item.active{background:linear-gradient(135deg,#fee2e2,#fff1f2);color:var(--red);border:1px solid var(--red-border);font-weight:700}
+    .nav-item.active svg{color:var(--red)}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{margin:0 10px 6px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#f0f6ff,#dbeafe);border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8B1A1A,#c0392b);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;color:#fff}
+    .user-name{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:#07183a}
+    .user-role{font-size:.62rem;color:var(--muted);margin-top:1px}
+    .logout-link{display:flex;align-items:center;gap:8px;padding:10px 24px;margin-bottom:14px;font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none;transition:color .18s}
+    .logout-link:hover{color:#ef4444}
+    .logout-link svg{width:14px;height:14px}
+
+    .topbar{position:fixed;left:var(--sidebar-w);right:0;top:0;height:58px;background:var(--topbar-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:40;box-shadow:0 2px 12px rgba(7,24,58,.05)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .page-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:var(--red-light);border:1px solid var(--red-border);font-size:.7rem;font-weight:700;color:var(--red)}
+    .page-chip svg{width:13px;height:13px}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#07183a}
+    .page-sub{font-size:.74rem;color:var(--muted);margin-top:1px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .status-badge{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:.7rem;font-weight:600;color:#059669}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+    .main{margin-left:var(--sidebar-w);padding-top:58px;flex:1;overflow-y:auto;height:100%}
+    .content{padding:28px 30px;max-width:700px}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(7,24,58,.04);margin-bottom:20px}
+    .card-header{padding:16px 22px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f8fbff,#fff);display:flex;align-items:center;gap:8px}
+    .card-header svg{width:15px;height:15px;color:var(--red)}
+    .card-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#07183a}
+    .card-body{padding:22px}
+
+    .info-row{display:flex;gap:8px;margin-bottom:10px;font-size:.85rem}
+    .info-label{font-weight:700;color:var(--text);min-width:130px}
+    .info-value{color:var(--text-mid)}
+
+    .no-pago{text-align:center;padding:30px;color:var(--muted);font-size:.85rem}
+    .no-pago svg{width:40px;height:40px;margin-bottom:10px;opacity:.3}
+
+    .img-pago{max-width:100%;border-radius:10px;border:1px solid var(--border);margin-top:10px}
+
+    .btn-row{display:flex;gap:12px;margin-top:20px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:9px;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all .18s}
+    .btn-approve{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
+    .btn-approve:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(5,150,105,.3)}
+    .btn-reject{background:linear-gradient(135deg,#8B1A1A,#c0392b);color:#fff}
+    .btn-reject:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(139,26,26,.3)}
+    .btn-back{background:var(--surface2);color:var(--text-mid);border:1px solid var(--border)}
+    .btn-back:hover{background:var(--border)}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700}
+    .badge-ok{background:#d1fae5;color:#047857;border:1px solid #6ee7b7}
+    .badge-rechazado{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .badge-pendiente{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+    .badge-sin{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-ico">SP</div>
+    <div>
+      <div class="brand-name">Saber <span>Pro</span> &amp; TYT</div>
+      <span class="brand-tag">Coordinador</span>
+    </div>
+  </div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/coordinador/dashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+  <div class="nav-section">Gestión</div>
+  <a class="nav-item active" href="/coordinador/estudiantes">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+    Estudiantes
+  </a>
+  <div class="nav-section">Informes</div>
+  <a class="nav-item" href="/coordinador/informe-general">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    Informe General
+  </a>
+  <a class="nav-item" href="/coordinador/informe-detallado">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M3 15h18M9 3v18"/>
+    </svg>
+    Informe Detallado
+  </a>
+  <a class="nav-item" href="/coordinador/informe-beneficios">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="20 12 20 22 4 22 4 12"/>
+      <rect x="2" y="7" width="20" height="5"/>
+      <line x1="12" y1="22" x2="12" y2="7"/>
+    </svg>
+    Informe Beneficios
+  </a>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-user">
+    <div class="user-av" th:text="${#strings.substring(usuario.nombre,0,1)}">C</div>
+    <div>
+      <div class="user-name" th:text="${usuario.nombre}">Coordinador</div>
+      <div class="user-role">Coordinador</div>
+    </div>
+  </div>
+  <a class="logout-link" href="/logout">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Cerrar sesión
+  </a>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="page-chip">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      Revisar Pago
+    </div>
+    <div>
+      <div class="page-title">Comprobante de Pago</div>
+      <div class="page-sub">Revisar y aprobar o rechazar el pago del estudiante</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-badge"><div class="status-dot"></div><span>Conectado</span></div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="content" th:if="${estudiante != null}">
+
+    <!-- INFO ESTUDIANTE -->
+    <div class="card">
+      <div class="card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="card-title">Datos del Estudiante</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value" th:text="${estudiante.nombre + ' ' + estudiante.apellido}"></span></div>
+        <div class="info-row"><span class="info-label">Documento:</span><span class="info-value" th:text="${estudiante.documento}"></span></div>
+        <div class="info-row"><span class="info-label">Correo:</span><span class="info-value" th:text="${estudiante.correo}"></span></div>
+        <div class="info-row"><span class="info-label">Programa:</span><span class="info-value" th:text="${estudiante.facultad.nombre}"></span></div>
+        <div class="info-row"><span class="info-label">Tipo Prueba:</span><span class="info-value" th:text="${estudiante.tipoPrueba}"></span></div>
+        <div class="info-row">
+          <span class="info-label">Estado Pago:</span>
+          <span th:if="${estudiante.rutaPago == null or estudiante.rutaPago == ''}" class="badge badge-sin">Sin comprobante</span>
+          <span th:if="${estudiante.rutaPago != null and estudiante.rutaPago != '' and estudiante.pagoAprobado == null}" class="badge badge-pendiente">Por revisar</span>
+          <span th:if="${estudiante.pagoAprobado != null and estudiante.pagoAprobado}" class="badge badge-ok">Aprobado</span>
+          <span th:if="${estudiante.pagoAprobado != null and !estudiante.pagoAprobado}" class="badge badge-rechazado">Rechazado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPROBANTE -->
+    <div class="card">
+      <div class="card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+        <span class="card-title">Comprobante</span>
+      </div>
+      <div class="card-body">
+        <!-- Sin comprobante -->
+        <div th:if="${estudiante.rutaPago == null or estudiante.rutaPago == ''}" class="no-pago">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+          <div>Este estudiante aún no ha subido su comprobante de pago.</div>
+        </div>
+        <!-- Con comprobante -->
+        <div th:if="${estudiante.rutaPago != null and estudiante.rutaPago != ''}">
+          <p style="font-size:.82rem;color:var(--text-mid);margin-bottom:12px">
+            Archivo: <strong th:text="${estudiante.rutaPago}"></strong>
+          </p>
+          <img th:src="@{/uploads/pagos/{archivo}(archivo=${estudiante.rutaPago})}"
+               class="img-pago"
+               onerror="this.style.display='none'; document.getElementById('no-img').style.display='block'"/>
+          <p id="no-img" style="display:none;font-size:.8rem;color:var(--muted);margin-top:8px">
+            (Vista previa no disponible — el archivo puede ser PDF u otro formato)
+          </p>
+
+          <div class="btn-row" th:if="${estudiante.pagoAprobado == null or !estudiante.pagoAprobado}">
+            <a th:href="@{/coordinador/pago/aprobar/{id}(id=${estudiante.id})}" class="btn btn-approve"
+               onclick="return confirm('¿Aprobar el pago de este estudiante?')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+              Aprobar Pago
+            </a>
+            <a th:href="@{/coordinador/pago/rechazar/{id}(id=${estudiante.id})}" class="btn btn-reject"
+               onclick="return confirm('¿Rechazar el pago de este estudiante?')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Rechazar Pago
+            </a>
+          </div>
+          <div class="btn-row" th:if="${estudiante.pagoAprobado != null and estudiante.pagoAprobado}">
+            <a th:href="@{/coordinador/pago/rechazar/{id}(id=${estudiante.id})}" class="btn btn-reject"
+               onclick="return confirm('¿Revertir aprobación y rechazar el pago?')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Rechazar Pago
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a href="/coordinador/estudiantes" class="btn btn-back">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver a Estudiantes
+    </a>
+
+  </div>
+</main>
+
+</body>
+</html>

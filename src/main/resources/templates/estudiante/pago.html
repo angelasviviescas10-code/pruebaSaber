@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Comprobante de Pago — Saber Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f0f6ff;--sidebar-bg:#ffffff;--topbar-bg:#ffffff;--surface:#ffffff;
+      --surface2:#f0f6ff;--border:#dce8f8;--border-strong:#b8d4f5;
+      --accent:#2563eb;--accent-dark:#07183a;--accent-light:#dbeafe;
+      --text:#07183a;--text-mid:#334155;--muted:#94a3b8;--sidebar-w:240px;
+      --red:#b91c1c;--red-light:#fee2e2;--red-border:#fca5a5;
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+    body{display:flex}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;box-shadow:4px 0 20px rgba(7,24,58,.06)}
+    .sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px}
+    .brand-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#07183a,#2563eb);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff}
+    .brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#07183a;line-height:1.15}
+    .brand-name span{color:#2563eb}
+    .brand-tag{display:inline-block;margin-top:4px;font-size:.56rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#8B1A1A,#c0392b);padding:2px 7px;border-radius:5px}
+    .nav-section{font-size:.58rem;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:18px 20px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 10px;border-radius:10px;font-size:.82rem;font-weight:500;color:var(--text-mid);cursor:pointer;text-decoration:none;transition:all .18s}
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--muted)}
+    .nav-item:hover{background:var(--red-light);color:var(--red);transform:translateX(2px)}
+    .nav-item:hover svg{color:var(--red)}
+    .nav-item.active{background:linear-gradient(135deg,#fee2e2,#fff1f2);color:var(--red);border:1px solid var(--red-border);font-weight:700}
+    .nav-item.active svg{color:var(--red)}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{margin:0 10px 6px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#f0f6ff,#dbeafe);border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8B1A1A,#c0392b);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;color:#fff}
+    .user-name{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:#07183a}
+    .user-role{font-size:.62rem;color:var(--muted);margin-top:1px}
+    .logout-link{display:flex;align-items:center;gap:8px;padding:10px 24px;margin-bottom:14px;font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none;transition:color .18s}
+    .logout-link:hover{color:#ef4444}
+    .logout-link svg{width:14px;height:14px}
+
+    /* TOPBAR */
+    .topbar{position:fixed;left:var(--sidebar-w);right:0;top:0;height:58px;background:var(--topbar-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:40;box-shadow:0 2px 12px rgba(7,24,58,.05)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .page-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:var(--red-light);border:1px solid var(--red-border);font-size:.7rem;font-weight:700;color:var(--red)}
+    .page-chip svg{width:13px;height:13px}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#07183a}
+    .page-sub{font-size:.74rem;color:var(--muted);margin-top:1px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .status-badge{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:.7rem;font-weight:600;color:#059669}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .topbar-date{font-size:.72rem;color:var(--muted);padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border)}
+
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);padding-top:58px;flex:1;overflow-y:auto;height:100%}
+    .main::-webkit-scrollbar{width:5px}
+    .main::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:5px}
+    .content{padding:28px 30px;max-width:680px}
+
+    /* CARDS */
+    .form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;animation:fadeUp .35s ease both;box-shadow:0 2px 10px rgba(7,24,58,.04)}
+    .form-card-header{padding:16px 22px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f8fbff,#fff);display:flex;align-items:center;gap:8px}
+    .form-card-header svg{width:15px;height:15px;color:var(--red)}
+    .form-card-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#07183a}
+    .form-card-body{padding:22px}
+
+    /* ALERT STATES */
+    .alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:11px;font-size:.82rem;margin-bottom:16px;border:1px solid}
+    .alert svg{width:15px;height:15px;flex-shrink:0}
+    .alert-success{background:#d1fae5;border-color:#6ee7b7;color:#047857}
+    .alert-danger{background:var(--red-light);border-color:var(--red-border);color:var(--red)}
+    .alert-info{background:var(--accent-light);border-color:#93c5fd;color:#1d4ed8}
+    .alert-warning{background:#fef3c7;border-color:#fde68a;color:#b45309}
+
+    /* UPLOAD AREA */
+    .upload-zone{border:2px dashed var(--red-border);border-radius:12px;padding:36px 24px;text-align:center;background:var(--red-light);background:linear-gradient(135deg,#fff5f5,#fff);cursor:pointer;transition:all .2s}
+    .upload-zone:hover{border-color:var(--red);background:#fff1f2}
+    .upload-zone-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#8B1A1A,#c0392b);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 6px 16px rgba(139,26,26,.25)}
+    .upload-zone-icon svg{width:22px;height:22px;color:#fff}
+    .upload-zone-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:#07183a;margin-bottom:4px}
+    .upload-zone-sub{font-size:.74rem;color:var(--muted);margin-bottom:14px}
+    .file-input{display:none}
+    .file-label{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;border:1px solid var(--red-border);background:#fff;color:var(--red);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s}
+    .file-label:hover{background:var(--red-light)}
+    .file-label svg{width:13px;height:13px}
+    .file-selected{margin-top:10px;font-size:.75rem;color:#047857;font-weight:600;display:none}
+
+    /* CURRENT FILE */
+    .current-file{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:11px;background:linear-gradient(135deg,#f0f6ff,#fff);border:1px solid var(--border)}
+    .current-file-ico{width:36px;height:36px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .current-file-ico svg{width:17px;height:17px;color:#1d4ed8}
+    .current-file-name{font-size:.8rem;font-weight:600;color:#07183a}
+    .current-file-sub{font-size:.68rem;color:var(--muted);margin-top:1px}
+
+    /* BUTTON */
+    .btn-submit{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#8B1A1A,#c0392b);color:#fff;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;transition:all .18s;margin-top:16px}
+    .btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(139,26,26,.3)}
+    .btn-submit svg{width:15px;height:15px}
+    .btn-back{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-mid);font-size:.78rem;font-weight:600;text-decoration:none;transition:all .15s}
+    .btn-back:hover{border-color:var(--red-border);color:var(--red)}
+    .btn-back svg{width:13px;height:13px}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-ico">SP</div>
+    <div>
+      <div class="brand-name">Saber <span>Pro</span> &amp; TYT</div>
+      <span class="brand-tag">Estudiante</span>
+    </div>
+  </div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/estudiante/dashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+  <div class="nav-section">Mis Documentos</div>
+  <a class="nav-item active" href="/estudiante/pago">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="2" y="5" width="20" height="14" rx="2"/>
+      <line x1="2" y1="10" x2="22" y2="10"/>
+    </svg>
+    Comprobante de Pago
+  </a>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-user">
+    <div class="user-av" th:text="${#strings.substring(usuario.nombre,0,1)}">E</div>
+    <div>
+      <div class="user-name" th:text="${usuario.nombre}">Estudiante</div>
+      <div class="user-role">Estudiante</div>
+    </div>
+  </div>
+  <a class="logout-link" href="/logout">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Cerrar sesión
+  </a>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="page-chip">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      Pago
+    </div>
+    <div>
+      <div class="page-title">Comprobante de Pago</div>
+      <div class="page-sub">Sube tu comprobante Saber Pro / TYT</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-date" id="topbar-date"></div>
+    <div class="status-badge"><div class="status-dot"></div><span>Conectado</span></div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="content">
+
+    <!-- ALERTAS -->
+    <div th:if="${exito}" class="alert alert-success">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      <span th:text="${exito}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span th:text="${error}"></span>
+    </div>
+
+    <!-- COMPROBANTE ACTUAL -->
+    <div th:if="${estudiante?.rutaPago}" class="form-card">
+      <div class="form-card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <polyline points="16 13 12 17 8 13"/><line x1="12" y1="17" x2="12" y2="7"/>
+        </svg>
+        <span class="form-card-title">Comprobante Actual</span>
+      </div>
+      <div class="form-card-body">
+        <div class="current-file">
+          <div class="current-file-ico">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <div class="current-file-name" th:text="${estudiante?.rutaPago}">comprobante.pdf</div>
+            <div class="current-file-sub">Ya tienes un archivo cargado — puedes reemplazarlo subiendo uno nuevo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBIR COMPROBANTE -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="16 16 12 12 8 16"/>
+          <line x1="12" y1="12" x2="12" y2="21"/>
+          <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+        </svg>
+        <span class="form-card-title" th:text="${estudiante?.rutaPago} ? 'Reemplazar Comprobante' : 'Subir Comprobante'">Subir Comprobante</span>
+      </div>
+      <div class="form-card-body">
+        <form action="/estudiante/pago/subir" method="post" enctype="multipart/form-data" id="uploadForm">
+          <div class="upload-zone" onclick="document.getElementById('archivoInput').click()">
+            <div class="upload-zone-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="16 16 12 12 8 16"/>
+                <line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+              </svg>
+            </div>
+            <div class="upload-zone-title">Arrastra o selecciona tu comprobante</div>
+            <div class="upload-zone-sub">Formatos aceptados: PDF, JPG, PNG · Máx. 10 MB</div>
+            <label class="file-label" onclick="event.stopPropagation()">
+              <input type="file" name="archivo" id="archivoInput" class="file-input" accept=".pdf,.jpg,.png" required onchange="mostrarArchivo(this)">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Explorar archivos
+            </label>
+            <div class="file-selected" id="fileSelected">
+              <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:13px;height:13px;display:inline;vertical-align:middle"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="fileName"></span>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+            Cargar Comprobante
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <a href="/estudiante/dashboard" class="btn-back">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Volver al Dashboard
+    </a>
+  </div>
+</main>
+
+<script>
+  const d = new Date();
+  document.getElementById('topbar-date').textContent =
+    d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+  function mostrarArchivo(input) {
+    if (input.files && input.files[0]) {
+      document.getElementById('fileName').textContent = input.files[0].name;
+      document.getElementById('fileSelected').style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

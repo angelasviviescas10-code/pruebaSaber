@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Gestión de Estudiantes — Saber Pro & TYT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f0f6ff;--sidebar-bg:#ffffff;--topbar-bg:#ffffff;--surface:#ffffff;
+      --surface2:#f0f6ff;--border:#dce8f8;--border-strong:#b8d4f5;
+      --accent:#2563eb;--accent-dark:#07183a;--accent-light:#dbeafe;
+      --text:#07183a;--text-mid:#334155;--muted:#94a3b8;--sidebar-w:240px;
+      --red:#b91c1c;--red-light:#fee2e2;--red-border:#fca5a5;
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+    body{display:flex;overflow:hidden}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;box-shadow:4px 0 20px rgba(7,24,58,.06)}
+    .sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px}
+    .brand-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#07183a,#2563eb);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff}
+    .brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#07183a;line-height:1.15}
+    .brand-name span{color:#2563eb}
+    .brand-tag{display:inline-block;margin-top:4px;font-size:.56rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#8B1A1A,#c0392b);padding:2px 7px;border-radius:5px}
+    .nav-section{font-size:.58rem;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:18px 20px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 10px;border-radius:10px;font-size:.82rem;font-weight:500;color:var(--text-mid);cursor:pointer;text-decoration:none;transition:all .18s}
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--muted)}
+    .nav-item:hover{background:var(--red-light);color:var(--red);transform:translateX(2px)}
+    .nav-item:hover svg{color:var(--red)}
+    .nav-item.active{background:linear-gradient(135deg,#fee2e2,#fff1f2);color:var(--red);border:1px solid var(--red-border);font-weight:700}
+    .nav-item.active svg{color:var(--red)}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{margin:0 10px 6px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#f0f6ff,#dbeafe);border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8B1A1A,#c0392b);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;color:#fff}
+    .user-name{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:#07183a}
+    .user-role{font-size:.62rem;color:var(--muted);margin-top:1px}
+    .logout-link{display:flex;align-items:center;gap:8px;padding:10px 24px;margin-bottom:14px;font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none;transition:color .18s}
+    .logout-link:hover{color:#ef4444}
+    .logout-link svg{width:14px;height:14px}
+
+    /* TOPBAR */
+    .topbar{position:fixed;left:var(--sidebar-w);right:0;top:0;height:58px;background:var(--topbar-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:40;box-shadow:0 2px 12px rgba(7,24,58,.05)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .page-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:var(--red-light);border:1px solid var(--red-border);font-size:.7rem;font-weight:700;color:var(--red)}
+    .page-chip svg{width:13px;height:13px}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#07183a}
+    .page-sub{font-size:.74rem;color:var(--muted);margin-top:1px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .status-badge{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:.7rem;font-weight:600;color:#059669}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .topbar-date{font-size:.72rem;color:var(--muted);padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border)}
+
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);padding-top:58px;flex:1;overflow-y:auto;height:100%}
+    .main::-webkit-scrollbar{width:5px}
+    .main::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:5px}
+    .content{padding:28px 30px}
+
+    /* FORM CARD */
+    .form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;animation:fadeUp .35s ease both;box-shadow:0 2px 10px rgba(7,24,58,.04)}
+    .form-card-header{padding:16px 22px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f8fbff,#fff);display:flex;align-items:center;gap:8px}
+    .form-card-header svg{width:15px;height:15px;color:var(--red)}
+    .form-card-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#07183a}
+    .form-card-body{padding:20px 22px}
+    .form-grid{display:grid;grid-template-columns:repeat(6,1fr) auto;gap:10px;align-items:end}
+    .form-field{display:flex;flex-direction:column;gap:5px}
+    .form-field label{font-size:.67rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+    .form-field input,.form-field select{
+      padding:8px 12px;border-radius:9px;border:1px solid var(--border);
+      background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);
+      transition:border .15s,box-shadow .15s;outline:none;
+    }
+    .form-field input:focus,.form-field select:focus{border-color:var(--red-border);box-shadow:0 0 0 3px rgba(185,28,28,.08)}
+    .btn-create{
+      display:flex;align-items:center;gap:6px;
+      padding:9px 18px;border-radius:9px;border:none;cursor:pointer;
+      background:linear-gradient(135deg,#8B1A1A,#c0392b);color:#fff;
+      font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;
+      transition:all .18s;white-space:nowrap;
+    }
+    .btn-create:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(139,26,26,.3)}
+    .btn-create svg{width:14px;height:14px}
+
+    /* TABLE CARD */
+    .table-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:visible;animation:fadeUp .4s ease both;animation-delay:.1s;box-shadow:0 2px 10px rgba(7,24,58,.04)}
+    .table-wrapper{overflow-x:auto;border-radius:0 0 16px 16px}
+    .table-header{padding:16px 22px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f8fbff,#fff);display:flex;align-items:center;justify-content:space-between}
+    .table-title{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#07183a}
+    .table-title svg{width:15px;height:15px;color:var(--red)}
+    .table-count{background:var(--red-light);border:1px solid var(--red-border);color:var(--red);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px}
+
+    /* SEARCH BAR */
+    .search-bar-wrap{padding:12px 22px;border-bottom:1px solid var(--border);background:#fff}
+    .search-input-wrap{position:relative;max-width:360px}
+    .search-input-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--muted);pointer-events:none}
+    .search-input{width:100%;padding:7px 12px 7px 32px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);outline:none;transition:border .15s,box-shadow .15s}
+    .search-input:focus{border-color:var(--red-border);box-shadow:0 0 0 3px rgba(185,28,28,.08)}
+    .search-input::placeholder{color:var(--muted)}
+    .no-results-row td{text-align:center;padding:36px;color:var(--muted);font-size:.82rem;display:none}
+
+    table{width:100%;border-collapse:collapse;min-width:820px}
+    thead tr{background:linear-gradient(135deg,#f8fbff,#f0f6ff)}
+    thead th{padding:11px 16px;font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;text-align:left}
+    thead th:nth-child(1){width:52px}
+    thead th:nth-child(2){min-width:110px}
+    thead th:nth-child(3){min-width:180px}
+    thead th:nth-child(4){min-width:140px}
+    thead th:nth-child(5){width:70px;text-align:center}
+    thead th:nth-child(6){min-width:110px;text-align:center}
+    thead th:nth-child(7){min-width:90px;text-align:center}
+    thead th:nth-child(8){min-width:220px}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:var(--surface2)}
+    tbody td{padding:12px 16px;font-size:.82rem;color:var(--text-mid);vertical-align:middle}
+    tbody td:nth-child(5){text-align:center}
+    tbody td:nth-child(6){text-align:center}
+    tbody td:nth-child(7){text-align:center}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.3px}
+    .badge-pro{background:#dbeafe;color:#1d4ed8}
+    .badge-tyt{background:#ede9fe;color:#6d28d9}
+    .badge-activo{background:#d1fae5;color:#047857}
+    .badge-pendiente{background:#fef3c7;color:#b45309}
+
+    /* Badges de estado de pago */
+    .badge-pago-ok{background:#d1fae5;color:#047857;border:1px solid #6ee7b7}
+    .badge-pago-rechazado{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .badge-pago-pendiente{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+    .badge-pago-sin{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
+
+    .actions{display:flex;gap:6px;flex-wrap:wrap}
+    .btn-action{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:7px;font-size:.67rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .btn-action svg{width:11px;height:11px}
+    .btn-edit{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+    .btn-edit:hover{background:#fde68a}
+    .btn-grade{background:#d1fae5;color:#047857;border:1px solid #6ee7b7}
+    .btn-grade:hover{background:#a7f3d0}
+    .btn-approve{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+    .btn-approve:hover{background:#bfdbfe}
+    .btn-delete{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+    .btn-delete:hover{background:#fecaca}
+    /* Botón Ver Pago — morado suave */
+    .btn-pago{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe}
+    .btn-pago:hover{background:#ede9fe}
+    .btn-pago-alerta{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;animation:parpadeo 1.4s infinite}
+    @keyframes parpadeo{0%,100%{opacity:1}50%{opacity:.55}}
+
+    .avatar-cell{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;color:#fff;background:linear-gradient(135deg,#8B1A1A,#c0392b)}
+
+    .empty-row td{text-align:center;padding:40px;color:var(--muted);font-size:.82rem}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-ico">SP</div>
+    <div>
+      <div class="brand-name">Saber <span>Pro</span> &amp; TYT</div>
+      <span class="brand-tag">Coordinador</span>
+    </div>
+  </div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/coordinador/dashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+  <div class="nav-section">Gestión</div>
+  <a class="nav-item active" href="/coordinador/estudiantes">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+    Estudiantes
+  </a>
+  <div class="nav-section">Informes</div>
+  <a class="nav-item" href="/coordinador/informe-general">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    Informe General
+  </a>
+  <a class="nav-item" href="/coordinador/informe-detallado">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M3 15h18M9 3v18"/>
+    </svg>
+    Informe Detallado
+  </a>
+  <a class="nav-item" href="/coordinador/informe-beneficios">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="20 12 20 22 4 22 4 12"/>
+      <rect x="2" y="7" width="20" height="5"/>
+      <line x1="12" y1="22" x2="12" y2="7"/>
+    </svg>
+    Informe Beneficios
+  </a>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-user">
+    <div class="user-av" th:text="${#strings.substring(usuario.nombre,0,1)}">C</div>
+    <div>
+      <div class="user-name" th:text="${usuario.nombre}">Coordinador</div>
+      <div class="user-role">Coordinador</div>
+    </div>
+  </div>
+  <a class="logout-link" href="/logout">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Cerrar sesión
+  </a>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="page-chip">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      </svg>
+      Estudiantes
+    </div>
+    <div>
+      <div class="page-title">Gestión de Alumnos</div>
+      <div class="page-sub">Crear, editar y gestionar estudiantes</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-date" id="topbar-date"></div>
+    <div class="status-badge"><div class="status-dot"></div><span>Conectado</span></div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="content">
+
+    <!-- FORM NUEVO ESTUDIANTE -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+        <span class="form-card-title">Nuevo Estudiante</span>
+      </div>
+      <div class="form-card-body">
+        <form action="/coordinador/estudiantes/guardar" method="post">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Documento</label>
+              <input type="text" name="documento" placeholder="Ej: 1234567" required>
+            </div>
+            <div class="form-field">
+              <label>Primer Nombre</label>
+              <input type="text" name="nombre" placeholder="Nombre" required>
+            </div>
+            <div class="form-field">
+              <label>Primer Apellido</label>
+              <input type="text" name="apellido" placeholder="Apellido" required>
+            </div>
+            <div class="form-field">
+              <label>Correo</label>
+              <input type="email" name="correo" placeholder="correo@uts.edu.co" required>
+            </div>
+            <div class="form-field">
+              <label>Teléfono</label>
+              <input type="text" name="telefono" placeholder="300..." required>
+            </div>
+            <div class="form-field">
+              <label>Tipo Prueba</label>
+              <select name="tipoPrueba" required>
+                <option value="PRO">PRO</option>
+                <option value="TYT">TYT</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Programa</label>
+              <select name="facultadId" required>
+                <option th:each="f : ${facultades}" th:value="${f.id}" th:text="${f.nombre}"></option>
+              </select>
+            </div>
+            <button type="submit" class="btn-create">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Crear
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          </svg>
+          Listado de Estudiantes
+        </div>
+        <span class="table-count" th:text="${#lists.size(lista)} + ' registros'">0 registros</span>
+      </div>
+      <div class="search-bar-wrap">
+        <div class="search-input-wrap">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input id="searchInput" class="search-input" type="text" placeholder="Buscar por nombre o cédula…" autocomplete="off">
+        </div>
+      </div>
+      <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Documento</th>
+            <th>Nombre Completo</th>
+            <th>Programa</th>
+            <th>Tipo</th>
+            <th>Pago</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${#lists.isEmpty(lista)}" class="empty-row">
+            <td colspan="8">Sin estudiantes registrados</td>
+          </tr>
+          <tr id="noResultsRow" style="display:none">
+            <td colspan="8" style="text-align:center;padding:36px;color:var(--muted);font-size:.82rem">
+              Sin resultados para la búsqueda
+            </td>
+          </tr>
+          <tr th:each="e : ${lista}">
+            <td>
+              <div class="avatar-cell" th:text="${#strings.substring(e.nombre,0,1)}">E</div>
+            </td>
+            <td th:text="${e.documento}"></td>
+            <td>
+              <div style="font-weight:600;color:#07183a" th:text="${e.nombre + ' ' + e.apellido}"></div>
+              <div style="font-size:.7rem;color:#94a3b8" th:text="${e.correo}"></div>
+            </td>
+            <td th:text="${e.facultad.nombre}"></td>
+            <td>
+              <span th:classappend="${e.tipoPrueba == 'PRO'} ? 'badge-pro' : 'badge-tyt'"
+                    class="badge" th:text="${e.tipoPrueba}"></span>
+            </td>
+            <!-- COLUMNA PAGO -->
+            <td>
+              <!-- Sin comprobante -->
+              <span th:if="${e.rutaPago == null or e.rutaPago == ''}" class="badge badge-pago-sin">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:9px;height:9px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Sin subir
+              </span>
+              <!-- Comprobante subido, pendiente de revisión -->
+              <span th:if="${e.rutaPago != null and e.rutaPago != '' and e.pagoAprobado == null}" class="badge badge-pago-pendiente">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:9px;height:9px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Por revisar
+              </span>
+              <!-- Aprobado -->
+              <span th:if="${e.pagoAprobado != null and e.pagoAprobado}" class="badge badge-pago-ok">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:9px;height:9px"><polyline points="20 6 9 17 4 12"/></svg>
+                Aprobado
+              </span>
+              <!-- Rechazado -->
+              <span th:if="${e.pagoAprobado != null and !e.pagoAprobado}" class="badge badge-pago-rechazado">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:9px;height:9px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Rechazado
+              </span>
+            </td>
+            <td>
+              <span th:if="${e.aprobado}" class="badge badge-activo">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:9px;height:9px"><polyline points="20 6 9 17 4 12"/></svg>
+                Activo
+              </span>
+              <span th:unless="${e.aprobado}" class="badge badge-pendiente">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width:9px;height:9px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                Pendiente
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <a th:href="@{/coordinador/estudiantes/editar/{id}(id=${e.id})}" class="btn-action btn-edit">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar
+                </a>
+                <!-- Ver Pago: parpadea si está pendiente de revisión -->
+                <a th:href="@{/coordinador/pago/revisar/{id}(id=${e.id})}"
+                   th:classappend="${e.rutaPago != null and e.rutaPago != '' and e.pagoAprobado == null} ? 'btn-pago-alerta' : 'btn-pago'"
+                   class="btn-action">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  Pago
+                </a>
+                <a th:href="@{/coordinador/estudiantes/calificar/{id}(id=${e.id})}" class="btn-action btn-grade">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  Calificar
+                </a>
+                <a th:href="@{/coordinador/estudiantes/aprobar/{id}(id=${e.id})}" class="btn-action btn-approve">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  Aprobar
+                </a>
+                <a th:href="@{/coordinador/estudiantes/eliminar/{id}(id=${e.id})}"
+                   class="btn-action btn-delete"
+                   onclick="return confirm('¿Eliminar estudiante?')">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                </a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const d = new Date();
+  document.getElementById('topbar-date').textContent =
+    d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+  // Búsqueda por nombre o cédula (client-side)
+  document.getElementById('searchInput').addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    const rows = document.querySelectorAll('tbody tr:not(#noResultsRow):not(.empty-row)');
+    let visible = 0;
+    rows.forEach(function(row) {
+      // col 1 = documento, col 2 = nombre completo
+      const doc  = (row.cells[1] ? row.cells[1].textContent : '').toLowerCase();
+      const name = (row.cells[2] ? row.cells[2].textContent : '').toLowerCase();
+      const match = !q || doc.includes(q) || name.includes(q);
+      row.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    document.getElementById('noResultsRow').style.display = (visible === 0 && q) ? '' : 'none';
+
+    // Actualizar el contador
+    const countEl = document.querySelector('.table-count');
+    if (countEl) {
+      countEl.textContent = visible + ' registro' + (visible !== 1 ? 's' : '');
+    }
+  });
+</script>
+</body>
+</html>

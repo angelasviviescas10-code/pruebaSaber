@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Buscar por Cédula — Docente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f0fdf8;--sidebar-bg:#ffffff;--topbar-bg:#ffffff;--surface:#ffffff;
+      --surface2:#f0fdf8;--border:#d1fae5;--border-strong:#6ee7b7;
+      --accent:#059669;--accent-dark:#064e3b;--accent-light:#d1fae5;
+      --text:#064e3b;--text-mid:#1e4d3a;--muted:#6b7280;--sidebar-w:240px;
+      --em:#10b981;--em-light:#d1fae5;--em-border:#6ee7b7;
+    }
+    html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+    body{display:flex}
+
+    .sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;box-shadow:4px 0 20px rgba(6,78,59,.06)}
+    .sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px}
+    .brand-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#064e3b,#059669);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff}
+    .brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#064e3b;line-height:1.15}
+    .brand-name span{color:#059669}
+    .brand-tag{display:inline-block;margin-top:4px;font-size:.56rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#047857,#10b981);padding:2px 7px;border-radius:5px}
+    .nav-section{font-size:.58rem;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:18px 20px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:2px 10px;border-radius:10px;font-size:.82rem;font-weight:500;color:#374151;cursor:pointer;text-decoration:none;transition:all .18s}
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--muted)}
+    .nav-item:hover{background:var(--em-light);color:var(--accent);transform:translateX(2px)}
+    .nav-item:hover svg{color:var(--accent)}
+    .nav-item.active{background:linear-gradient(135deg,#d1fae5,#ecfdf5);color:var(--accent);border:1px solid var(--em-border);font-weight:700}
+    .nav-item.active svg{color:var(--accent)}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{margin:0 10px 6px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .user-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#047857,#10b981);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;color:#fff}
+    .user-name{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:#064e3b}
+    .user-role{font-size:.62rem;color:var(--muted);margin-top:1px}
+    .logout-link{display:flex;align-items:center;gap:8px;padding:10px 24px;margin-bottom:14px;font-size:.75rem;color:var(--muted);cursor:pointer;text-decoration:none;transition:color .18s}
+    .logout-link:hover{color:#ef4444}
+    .logout-link svg{width:14px;height:14px}
+
+    .topbar{position:fixed;left:var(--sidebar-w);right:0;top:0;height:58px;background:var(--topbar-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:40;box-shadow:0 2px 12px rgba(6,78,59,.05)}
+    .topbar-left{display:flex;align-items:center;gap:14px}
+    .page-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;background:var(--em-light);border:1px solid var(--em-border);font-size:.7rem;font-weight:700;color:var(--accent)}
+    .page-chip svg{width:13px;height:13px}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#064e3b}
+    .page-sub{font-size:.74rem;color:var(--muted);margin-top:1px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .status-badge{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-size:.7rem;font-weight:600;color:#059669}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .topbar-date{font-size:.72rem;color:var(--muted);padding:6px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border)}
+
+    .main{margin-left:var(--sidebar-w);padding-top:58px;flex:1;overflow-y:auto;height:100%}
+    .main::-webkit-scrollbar{width:5px}
+    .main::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:5px}
+    .content{padding:28px 30px;max-width:820px}
+
+    /* CARDS */
+    .form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;animation:fadeUp .35s ease both;box-shadow:0 2px 10px rgba(6,78,59,.04)}
+    .form-card:nth-child(2){animation-delay:.07s}
+    .form-card-header{padding:16px 22px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f0fdf8,#fff);display:flex;align-items:center;gap:8px}
+    .form-card-header svg{width:15px;height:15px;color:var(--accent)}
+    .form-card-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:#064e3b}
+    .form-card-body{padding:22px}
+
+    /* SEARCH */
+    .search-row{display:flex;gap:12px;align-items:flex-end}
+    .field-wrap{flex:1;display:flex;flex-direction:column;gap:5px}
+    .field-label{font-size:.67rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+    .field-input{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:.88rem;color:#064e3b;outline:none;transition:border .15s,box-shadow .15s}
+    .field-input:focus{border-color:var(--em-border);box-shadow:0 0 0 3px rgba(16,185,129,.1);background:#fff}
+    .btn-search{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#047857,#10b981);color:#fff;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;transition:all .18s;white-space:nowrap}
+    .btn-search:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(5,150,105,.3)}
+    .btn-search svg{width:14px;height:14px}
+
+    /* ALERT */
+    .alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:11px;font-size:.82rem;border:1px solid}
+    .alert svg{width:15px;height:15px;flex-shrink:0}
+    .alert-danger{background:#fee2e2;border-color:#fca5a5;color:#b91c1c}
+
+    /* PROFILE */
+    .profile-header{display:flex;align-items:center;gap:16px;margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+    .profile-av{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#047857,#10b981);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(5,150,105,.25)}
+    .profile-name{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#064e3b;margin-bottom:3px}
+    .profile-doc{font-size:.75rem;color:var(--muted)}
+
+    /* DETAIL GRID */
+    .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .detail-item{}
+    .detail-label{font-size:.65rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+    .detail-value{font-size:.88rem;font-weight:600;color:#064e3b}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700}
+    .badge-ok{background:#d1fae5;color:#047857;border:1px solid #6ee7b7}
+    .badge-warn{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
+    .badge-pro{background:#dbeafe;color:#1d4ed8}
+    .badge-tyt{background:#ede9fe;color:#6d28d9}
+
+    /* SCORES */
+    .scores-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+    .score-item{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:14px 16px}
+    .score-label{font-size:.62rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .score-value{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#064e3b}
+    .score-value.global{color:var(--accent);font-size:1.8rem}
+    .score-bar{height:3px;border-radius:2px;background:var(--border);margin-top:8px;overflow:hidden}
+    .score-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#047857,#10b981)}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-ico">SP</div>
+    <div>
+      <div class="brand-name">Saber <span>Pro</span> &amp; TYT</div>
+      <span class="brand-tag">Docente</span>
+    </div>
+  </div>
+  <div class="nav-section">Principal</div>
+  <a class="nav-item" href="/docente/dashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+  <div class="nav-section">Consultas</div>
+  <a class="nav-item" href="/docente/buscar-facultad">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    Por Facultad
+  </a>
+  <a class="nav-item active" href="/docente/buscar-cedula">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    Por Cédula
+  </a>
+  <div class="nav-section">Informes</div>
+  <a class="nav-item" href="/docente/informe-alumnos">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+    </svg>
+    Informe Alumnos
+  </a>
+  <a class="nav-item" href="/docente/informe-beneficios">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    Informe Beneficios
+  </a>
+  <a class="nav-item" href="/docente/resolucion-beneficios">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    Resolución Beneficios
+  </a>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-user">
+    <div class="user-av" th:text="${#strings.substring(usuario.nombre,0,1)}">D</div>
+    <div>
+      <div class="user-name" th:text="${usuario.nombre}">Docente</div>
+      <div class="user-role">Docente</div>
+    </div>
+  </div>
+  <a class="logout-link" href="/logout">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Cerrar sesión
+  </a>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="page-chip">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Consulta
+    </div>
+    <div>
+      <div class="page-title">Buscar por Cédula</div>
+      <div class="page-sub">Consulta individual de estudiante</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-date" id="topbar-date"></div>
+    <div class="status-badge"><div class="status-dot"></div><span>Conectado</span></div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="content">
+
+    <!-- BUSCADOR -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span class="form-card-title">Ingresar Documento</span>
+      </div>
+      <div class="form-card-body">
+        <form method="get" action="/docente/buscar-cedula">
+          <div class="search-row">
+            <div class="field-wrap">
+              <label class="field-label">Número de Cédula / Documento</label>
+              <input type="text" name="documento" th:value="${documento}"
+                     class="field-input" placeholder="Ej: 1234567890"/>
+            </div>
+            <button type="submit" class="btn-search">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Buscar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- NO ENCONTRADO -->
+    <div class="form-card" th:if="${documento != null and estudiante == null}">
+      <div class="form-card-body">
+        <div class="alert alert-danger">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          No se encontró ningún estudiante con el documento <strong th:text="${documento}"></strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADO -->
+    <div class="form-card" th:if="${estudiante != null}">
+      <div class="form-card-header">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="form-card-title">Datos del Estudiante</span>
+      </div>
+      <div class="form-card-body">
+
+        <div class="profile-header">
+          <div class="profile-av" th:text="${#strings.substring(estudiante.nombre,0,1)}">E</div>
+          <div>
+            <div class="profile-name" th:text="${estudiante.nombre + ' ' + estudiante.apellido}">Nombre Apellido</div>
+            <div class="profile-doc">Documento: <span th:text="${estudiante.documento}"></span></div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <span th:classappend="${estudiante.tipoPrueba == 'PRO'} ? 'badge-pro' : 'badge-tyt'"
+                  class="badge" th:text="${estudiante.tipoPrueba}">PRO</span>
+            <span th:if="${estudiante.aprobado}" class="badge badge-ok">✓ Aprobado</span>
+            <span th:unless="${estudiante.aprobado}" class="badge badge-warn">⏳ Pendiente</span>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Correo</div>
+            <div class="detail-value" th:text="${estudiante.correo}">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Teléfono</div>
+            <div class="detail-value" th:text="${estudiante.telefono}">—</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Facultad / Programa</div>
+            <div class="detail-value" th:text="${estudiante.facultad != null ? estudiante.facultad.nombre : '—'}">—</div>
+          </div>
+        </div>
+
+        <!-- PUNTAJES (solo si tiene resultados) -->
+        <div class="scores-grid" th:if="${estudiante.puntajeGlobal != null}">
+          <div class="score-item" style="grid-column:span 1;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7">
+            <div class="score-label">Puntaje Global</div>
+            <div class="score-value global" th:text="${estudiante.puntajeGlobal}">—</div>
+          </div>
+          <div class="score-item">
+            <div class="score-label">Comunicación Escrita</div>
+            <div class="score-value" th:text="${estudiante.lecturaEscritura}">—</div>
+            <div class="score-bar"><div class="score-bar-fill" th:style="'width:' + ${(estudiante.lecturaEscritura / 300) * 100} + '%'"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-label">Razonamiento Cuant.</div>
+            <div class="score-value" th:text="${estudiante.razonamientoCuantitativo}">—</div>
+            <div class="score-bar"><div class="score-bar-fill" th:style="'width:' + ${(estudiante.razonamientoCuantitativo / 300) * 100} + '%'"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-label">Lectura Crítica</div>
+            <div class="score-value" th:text="${estudiante.competenciasCiudadanas}">—</div>
+            <div class="score-bar"><div class="score-bar-fill" th:style="'width:' + ${(estudiante.competenciasCiudadanas / 300) * 100} + '%'"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-label">Inglés</div>
+            <div class="score-value" th:text="${estudiante.inglesComponente}">—</div>
+            <div class="score-bar"><div class="score-bar-fill" th:style="'width:' + ${(estudiante.inglesComponente / 300) * 100} + '%'"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-label">Comp. Ciudadanas</div>
+            <div class="score-value" th:text="${estudiante.lecturaEscritura2}">—</div>
+            <div class="score-bar"><div class="score-bar-fill" th:style="'width:' + ${(estudiante.lecturaEscritura2 / 300) * 100} + '%'"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-label">Comp. Específico</div>
+            <div class="score-value" th:text="${estudiante.componenteEspecifico}">—</div>
+            <div class="score-bar"><div class="score-bar-fill" style="background:linear-gradient(90deg,#1d4ed8,#3b82f6)" th:style="'width:' + ${(estudiante.componenteEspecifico / 300) * 100} + '%'"></div></div>
+          </div>
+        </div>
+
+        <!-- Sin resultados -->
+        <div th:unless="${estudiante.puntajeGlobal != null}"
+             style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:.82rem;padding-bottom:4px">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width:28px;height:28px;margin:0 auto 8px;display:block;opacity:.4">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Este estudiante aún no tiene resultados registrados.
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const d = new Date();
+  document.getElementById('topbar-date').textContent =
+    d.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+</script>
+</body>
+</html>
