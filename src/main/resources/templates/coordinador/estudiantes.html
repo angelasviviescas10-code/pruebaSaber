@@ -408,10 +408,24 @@
                   <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                   Pago
                 </a>
-                <a th:href="@{/coordinador/estudiantes/calificar/{id}(id=${e.id})}" class="btn-action btn-grade">
-                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                  Calificar
-                </a>
+				<!-- Si ya tiene resultado: mostrar puntaje -->
+				<th:block th:if="${ultimosResultados[e.id] != null}">
+				  <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:#07183a"
+				        th:text="${ultimosResultados[e.id].puntajeGlobal}">—</span>
+				  <br>
+				  <a th:href="@{/coordinador/estudiantes/calificar/{id}(id=${e.id})}"
+				     style="font-size:.68rem;color:var(--muted);text-decoration:underline">Actualizar</a>
+				</th:block>
+
+				<!-- Si NO tiene resultado: mostrar botón calificar -->
+				<th:block th:unless="${ultimosResultados[e.id] != null}">
+				  <a th:href="@{/coordinador/estudiantes/calificar/{id}(id=${e.id})}" class="btn-calificar">
+				    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:12px;height:12px">
+				      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+				    </svg>
+				    Calificar
+				  </a>
+				</th:block>
                 <a th:href="@{/coordinador/estudiantes/aprobar/{id}(id=${e.id})}" class="btn-action btn-approve">
                   <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                   Aprobar

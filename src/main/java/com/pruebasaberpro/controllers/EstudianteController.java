@@ -144,24 +144,20 @@ public class EstudianteController {
         if (usuario == null) return "redirect:/login";
 
         Optional<Estudiante> opt = getEstudiante(usuario);
-        System.out.println(">>> [PAGO POST] Usuario correo: " + usuario.getCorreo());
-        System.out.println(">>> [PAGO POST] Estudiante encontrado: " + opt.isPresent());
-        System.out.println(">>> [PAGO POST] Archivo recibido: " + (archivo != null ? archivo.getOriginalFilename() : "NULL"));
-        System.out.println(">>> [PAGO POST] Archivo vacío: " + (archivo != null && archivo.isEmpty()));
 
         if (opt.isPresent()) {
             try {
-                String carpeta = "uploads/pagos/";
+                // Ruta absoluta fuera del JAR, en el sistema de archivos del servidor
+                String carpeta = System.getProperty("user.dir") + "/uploads/pagos/";
                 new File(carpeta).mkdirs();
                 String nombreArchivo = usuario.getUsername() + "_" + archivo.getOriginalFilename();
                 Files.write(Paths.get(carpeta + nombreArchivo), archivo.getBytes());
+
                 Estudiante e = opt.get();
                 e.setRutaPago(nombreArchivo);
                 estudianteRepository.save(e);
-                System.out.println(">>> [PAGO POST] Guardado OK: " + nombreArchivo);
                 model.addAttribute("exito", "Comprobante subido correctamente");
             } catch (Exception ex) {
-                System.out.println(">>> [PAGO POST] ERROR: " + ex.getMessage());
                 ex.printStackTrace();
                 model.addAttribute("error", "Error al subir el archivo: " + ex.getMessage());
             }

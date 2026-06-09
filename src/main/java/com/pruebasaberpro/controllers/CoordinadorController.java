@@ -19,6 +19,8 @@ public class CoordinadorController {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final BeneficioRepository beneficioRepository;
+    private Double lecturaEscritura2; // Lectura Crítica
+ // + getter y setter
 
     public CoordinadorController(EstudianteRepository estudianteRepository,
                                  ResultadoRepository resultadoRepository,
@@ -168,6 +170,7 @@ public class CoordinadorController {
     public String guardarCalificacion(@RequestParam Long estudianteId,
                                       @RequestParam Double puntajeGlobal,
                                       @RequestParam Double lecturaEscritura,
+                                      @RequestParam Double lecturaEscritura2,      // ← AGREGAR
                                       @RequestParam Double razonamientoCuantitativo,
                                       @RequestParam Double competenciasCiudadanas,
                                       @RequestParam Double inglesComponente,
@@ -181,7 +184,7 @@ public class CoordinadorController {
             Resultado r = new Resultado();
             r.setEstudiante(e);
             r.setPuntajeGlobal(puntajeGlobal);
-            r.setLecturaEscritura(lecturaEscritura);
+            r.setLecturaEscritura(lecturaEscritura);   // ← AGREGAR (ver Paso 2)
             r.setRazonamientoCuantitativo(razonamientoCuantitativo);
             r.setCompetenciasCiudadanas(competenciasCiudadanas);
             r.setInglesComponente(inglesComponente);
