@@ -19,11 +19,15 @@ public class LoginController {
         this.usuarioRepository = usuarioRepository;
     }
 
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/login";
+    }
+
     @GetMapping("/login")
     public String mostrarLogin(Model model) {
         List<Usuario> usuarios = usuarioRepository.findAll();
-        
-        // Mapear color por usuario
+
         Map<Long, String> colores = new HashMap<>();
         for (Usuario u : usuarios) {
             String color = switch (u.getRol().getNombre()) {
@@ -34,12 +38,11 @@ public class LoginController {
             };
             colores.put(u.getId(), color);
         }
-        
+
         model.addAttribute("usuarios", usuarios);
         model.addAttribute("colores", colores);
         return "login";
     }
-
 
     @PostMapping("/login")
     public String procesarLogin(@RequestParam String username,
@@ -51,13 +54,13 @@ public class LoginController {
 
         if (usuario == null || !usuario.getPassword().equals(password)) {
             model.addAttribute("error", "Usuario o contraseña incorrectos");
-            model.addAttribute("usuarios", usuarioRepository.findAll()); // ← AGREGAR
+            model.addAttribute("usuarios", usuarioRepository.findAll());
             return "login";
         }
 
         if (!usuario.isActivo()) {
             model.addAttribute("error", "Tu cuenta está inactiva");
-            model.addAttribute("usuarios", usuarioRepository.findAll()); // ← AGREGAR
+            model.addAttribute("usuarios", usuarioRepository.findAll());
             return "login";
         }
 
